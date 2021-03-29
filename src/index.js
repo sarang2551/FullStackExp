@@ -2,11 +2,15 @@ import ReactDOM from "react-dom";
 import React from "react";
 import "./styles.css";
 import Axios from "axios";
+import { Switch, Route, BrowserRouter } from "react-router-dom";
+import Register from "./App";
+
 class MyForm extends React.Component {
   constructor(props) {
     super(props);
     this.state = { username: "", password: "" };
   }
+
   handleChangeUsername = (e) => {
     this.setState({ username: e.target.value });
   };
@@ -45,10 +49,49 @@ class MyForm extends React.Component {
           ></input>
           <br />
           <button type="submit">SUBMIT</button>
+          <br />
+          <a className="button" href="https://5cs4z.csb.app/register">
+            REGISTER
+          </a>
         </div>
       </form>
     );
   }
 }
+
+const FormWrapper = (props) => {
+  const [title, setTitle] = React.useState(props.title || "Empty");
+
+  React.useEffect(() => {
+    console.log("Effect", props.title);
+    setTitle(props.title);
+  }, [props.title]);
+
+  return (
+    <>
+      <h1>{title}</h1>
+      {props.children}
+    </>
+  );
+};
+
 const rootElement = document.getElementById("root");
-ReactDOM.render(<MyForm />, rootElement);
+ReactDOM.render(
+  <BrowserRouter>
+    <Switch>
+      <Route
+        exact
+        path="/x"
+        component={() => (
+          <FormWrapper title="Hello">
+            <MyForm />
+          </FormWrapper>
+        )}
+      />
+
+      <Route exact path="/" component={() => <MyForm />} />
+      <Route exact path="/register" component={() => <Register />} />
+    </Switch>
+  </BrowserRouter>,
+  rootElement
+);
