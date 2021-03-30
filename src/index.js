@@ -2,9 +2,10 @@ import ReactDOM from "react-dom";
 import React from "react";
 import "./styles.css";
 import Axios from "axios";
-import { Switch, Route, BrowserRouter } from "react-router-dom";
+import { Switch, Route, BrowserRouter, Redirect } from "react-router-dom";
 import Register from "./App";
 import ErrorComponent from "./components/error";
+import Mainpage from "./mainpage";
 class MyForm extends React.Component {
   constructor(props) {
     super(props);
@@ -12,7 +13,9 @@ class MyForm extends React.Component {
       username: "",
       password: "",
       renderLoginMessage: false,
-      errorProps: {}
+      errorProps: {},
+      redirect: null,
+      resData: {}
     };
   }
 
@@ -33,22 +36,15 @@ class MyForm extends React.Component {
       Axios.post("http://localhost:3000/login", userInfo).then((res) => {
         let loginProps = null;
         const { username, loginStatus } = res.data;
-        console.log(res.data);
         switch (loginStatus) {
           case "success":
-            loginProps = {
-              type: "success",
-              content: `${username} logged in successfully!`
-            };
-            this.setState({
-              errorProps: loginProps,
-              renderLoginMessage: true
-            });
+            this.setState({ redirect: "/mainpage", resData: res.data });
+            console.log("res.data ", res.data);
             return;
           case "failed":
             loginProps = {
               type: "failed",
-              content: `User login failed. Incorrect password!`
+              content: `${username} login failed. Incorrect password!`
             };
             this.setState({
               errorProps: loginProps,
@@ -71,6 +67,13 @@ class MyForm extends React.Component {
     }
   };
   render() {
+    if (this.state.redirect) {
+      return (
+        <Redirect
+          to={{ pathname: this.state.redirect, state: this.state.resData }}
+        />
+      );
+    }
     return (
       <>
         <form method="POST" className="App" onSubmit={this.mySubmitHandler}>
@@ -134,8 +137,13 @@ ReactDOM.render(
         )}
       />
 
-      <Route exact path="/" component={() => <MyForm />} />
-      <Route exact path="/register" component={() => <Register />} />
+      <Route exact path="/" render={() => <MyForm />} />
+      <Route exact path="/register" render={() => <Register />} />
+      <Route
+        exact
+        path="/mainpage"
+        render={(props) => <Mainpage {...props} />}
+      />
     </Switch>
   </BrowserRouter>,
   rootElement
