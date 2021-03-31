@@ -6,6 +6,7 @@ import { Switch, Route, BrowserRouter, Redirect } from "react-router-dom";
 import Register from "./App";
 import ErrorComponent from "./components/error";
 import Mainpage from "./mainpage";
+
 class MyForm extends React.Component {
   constructor(props) {
     super(props);
@@ -107,42 +108,18 @@ class MyForm extends React.Component {
   }
 }
 
-const FormWrapper = (props) => {
-  const [title, setTitle] = React.useState(props.title || "Empty");
-
-  React.useEffect(() => {
-    console.log("Effect", props.title);
-    setTitle(props.title);
-  }, [props.title]);
-
-  return (
-    <>
-      <h1>{title}</h1>
-      {props.children}
-    </>
-  );
-};
-
 const rootElement = document.getElementById("root");
 ReactDOM.render(
   <BrowserRouter>
     <Switch>
-      <Route
-        exact
-        path="/x"
-        component={() => (
-          <FormWrapper title="Hello">
-            <MyForm />
-          </FormWrapper>
-        )}
-      />
-
       <Route exact path="/" render={() => <MyForm />} />
       <Route exact path="/register" render={() => <Register />} />
       <Route
         exact
         path="/mainpage"
-        render={(props) => <Mainpage {...props} />}
+        render={(props) => {
+          return <Mainpage {...props} />;
+        }}
       />
     </Switch>
   </BrowserRouter>,
