@@ -6,7 +6,10 @@ import { Switch, Route, BrowserRouter, Redirect } from "react-router-dom";
 import Register from "./App";
 import ErrorComponent from "./components/error";
 import Mainpage from "./mainpage";
-
+import { Provider } from "react-redux";
+import store from "./redux/store";
+import { useDispatch } from "react-redux";
+import { updateToDoList } from "./redux/slice";
 class MyForm extends React.Component {
   constructor(props) {
     super(props);
@@ -67,6 +70,7 @@ class MyForm extends React.Component {
       console.log(e);
     }
   };
+
   render() {
     if (this.state.redirect) {
       return (
@@ -109,6 +113,7 @@ class MyForm extends React.Component {
 }
 
 const rootElement = document.getElementById("root");
+
 ReactDOM.render(
   <BrowserRouter>
     <Switch>
@@ -118,7 +123,11 @@ ReactDOM.render(
         exact
         path="/mainpage"
         render={(props) => {
-          return <Mainpage {...props} />;
+          return (
+            <Provider store={store}>
+              <Mainpage {...props} />
+            </Provider>
+          );
         }}
       />
     </Switch>
