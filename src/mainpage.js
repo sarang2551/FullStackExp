@@ -1,8 +1,7 @@
 import React from "react";
 import "./styles.css";
 import axios from "axios";
-import { useSelector, useDispatch } from "react-redux";
-import reducer, { selectList } from "./redux/slice";
+import reducer from "./redux/slice";
 import { addToList, deleteFromList } from "./redux/slice";
 export default function MainPage(props) {
   const initialState = { toDoList: props.location.state.toDoList };

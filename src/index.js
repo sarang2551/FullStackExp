@@ -1,6 +1,6 @@
 import ReactDOM from "react-dom";
 import React from "react";
-import "./styles.css";
+import "./login.scss";
 import Axios from "axios";
 import { Switch, Route, BrowserRouter, Redirect } from "react-router-dom";
 import Register from "./App";
@@ -8,8 +8,9 @@ import ErrorComponent from "./components/error";
 import Mainpage from "./mainpage";
 import { Provider } from "react-redux";
 import store from "./redux/store";
-import { useDispatch } from "react-redux";
-import { updateToDoList } from "./redux/slice";
+import Particles from "particles-bg";
+import LoginBox from "./components/Login";
+import RegisterBox from "./components/Register";
 class MyForm extends React.Component {
   constructor(props) {
     super(props);
@@ -19,7 +20,9 @@ class MyForm extends React.Component {
       renderLoginMessage: false,
       errorProps: {},
       redirect: null,
-      resData: {}
+      resData: {},
+      isLoginOpen: true,
+      isRegisterOpen: false
     };
   }
 
@@ -29,6 +32,13 @@ class MyForm extends React.Component {
   handleChangePassword = (e) => {
     this.setState({ password: e.target.value });
   };
+  showLoginBox() {
+    this.setState({ isLoginOpen: true, isRegisterOpen: false });
+  }
+
+  showRegisterBox() {
+    this.setState({ isRegisterOpen: true, isLoginOpen: false });
+  }
   mySubmitHandler = async (event) => {
     event.preventDefault();
     try {
@@ -81,27 +91,33 @@ class MyForm extends React.Component {
     }
     return (
       <>
-        <form method="POST" className="App" onSubmit={this.mySubmitHandler}>
-          <div>
-            <label>Username</label>
-            <br />
-            <input name="username" onChange={this.handleChangeUsername}></input>
-            <br />
-            <label>Password</label>
-            <br />
-            <input
-              name="password"
-              type="password"
-              onChange={this.handleChangePassword}
-            ></input>
-            <br />
-            <button type="submit">SUBMIT</button>
-            <br />
-            <a className="button" href="https://5cs4z.csb.app/register">
-              REGISTER
-            </a>
+        <div className="root-container">
+          <div className="box-controller">
+            <div
+              className={
+                "controller " +
+                (this.state.isLoginOpen ? "selected-controller" : "")
+              }
+              onClick={this.showLoginBox.bind(this)}
+            >
+              Login
+            </div>
+            <div
+              className={
+                "controller " +
+                (this.state.isRegisterOpen ? "selected-controller" : "")
+              }
+              onClick={this.showRegisterBox.bind(this)}
+            >
+              Register
+            </div>
           </div>
-        </form>
+
+          <div className="box-container">
+            {this.state.isLoginOpen && <LoginBox />}
+            {this.state.isRegisterOpen && <RegisterBox />}
+          </div>
+        </div>
         {this.state.renderLoginMessage ? (
           <>
             <ErrorComponent errorProps={this.state.errorProps} />
@@ -117,7 +133,18 @@ const rootElement = document.getElementById("root");
 ReactDOM.render(
   <BrowserRouter>
     <Switch>
-      <Route exact path="/" render={() => <MyForm />} />
+      <Route
+        exact
+        path="/"
+        render={() => {
+          return (
+            <>
+              <Particles type="polygon" bg={true} />
+              <MyForm />
+            </>
+          );
+        }}
+      />
       <Route exact path="/register" render={() => <Register />} />
       <Route
         exact
