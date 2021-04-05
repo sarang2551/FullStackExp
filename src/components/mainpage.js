@@ -1,8 +1,7 @@
 import React from "react";
-import "./styles.css";
-import axios from "axios";
-import reducer from "./redux/slice";
-import { addToList, deleteFromList } from "./redux/slice";
+import "../styles.css";
+import reducer from "../redux/slice";
+import { addToList, deleteFromList } from "../redux/slice";
 export default function MainPage(props) {
   const initialState = { toDoList: props.location.state.toDoList };
   //const dispatch = useDispatch();
@@ -30,22 +29,22 @@ export default function MainPage(props) {
         <label>Anything to add?</label>
         <input onChange={handleChange} value={input}></input>
         <button onClick={handleSubmit}>Add To-Do</button>
-      </div>
-      {list.toDoList.length > 0
-        ? list.toDoList.map((content, index) => {
-            return (
-              <li key={index}>
-                <input
-                  type="checkbox"
+        {list.toDoList.length > 0
+          ? list.toDoList.map((content, index) => {
+              return (
+                <li
+                  key={index}
+                  className="list-object"
                   onClick={() => {
                     handleDelete(index);
                   }}
-                ></input>
-                {content}
-              </li>
-            );
-          })
-        : null}
+                >
+                  {content}
+                </li>
+              );
+            })
+          : null}
+      </div>
     </>
   );
 }

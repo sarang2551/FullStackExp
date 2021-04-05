@@ -1,163 +1,70 @@
 import ReactDOM from "react-dom";
-import React from "react";
-import "./login.scss";
-import Axios from "axios";
-import { Switch, Route, BrowserRouter, Redirect } from "react-router-dom";
-import Register from "./App";
-import ErrorComponent from "./components/error";
-import Mainpage from "./mainpage";
+import { Switch, Route, BrowserRouter } from "react-router-dom";
+import Mainpage from "./components/mainpage";
 import { Provider } from "react-redux";
 import store from "./redux/store";
 import Particles from "particles-bg";
-import LoginBox from "./components/Login";
-import RegisterBox from "./components/Register";
-class MyForm extends React.Component {
+import MyForm from "./App";
+import About from "./components/About";
+import Axios from "axios";
+import React from "react";
+import Header from "./components/Header";
+const rootElement = document.getElementById("root");
+
+class MainApp extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      username: "",
-      password: "",
-      renderLoginMessage: false,
-      errorProps: {},
-      redirect: null,
-      resData: {},
-      isLoginOpen: true,
-      isRegisterOpen: false
-    };
+    this.state = { userData: null };
   }
-
-  handleChangeUsername = (e) => {
-    this.setState({ username: e.target.value });
+  getData = async () => {
+    var response = await Axios.get("http://localhost:3000/getData");
+    this.setState({ userData: response.data.main });
   };
-  handleChangePassword = (e) => {
-    this.setState({ password: e.target.value });
-  };
-  showLoginBox() {
-    this.setState({ isLoginOpen: true, isRegisterOpen: false });
+  componentDidMount() {
+    this.getData();
   }
-
-  showRegisterBox() {
-    this.setState({ isRegisterOpen: true, isLoginOpen: false });
-  }
-  mySubmitHandler = async (event) => {
-    event.preventDefault();
-    try {
-      const userInfo = {
-        username: this.state.username,
-        password: this.state.password
-      };
-      console.log("userInfo", userInfo);
-      Axios.post("http://localhost:3000/login", userInfo).then((res) => {
-        let loginProps = null;
-        const { username, loginStatus } = res.data;
-        switch (loginStatus) {
-          case "success":
-            this.setState({ redirect: "/mainpage", resData: res.data });
-            console.log("res.data ", res.data);
-            return;
-          case "failed":
-            loginProps = {
-              type: "failed",
-              content: `${username} login failed. Incorrect password!`
-            };
-            this.setState({
-              errorProps: loginProps,
-              renderLoginMessage: true
-            });
-            return;
-          case "notFound":
-            loginProps = { type: "warn", content: `User could not be found!` };
-            this.setState({
-              errorProps: loginProps,
-              renderLoginMessage: true
-            });
-            return;
-          default:
-            return <div></div>;
-        }
-      });
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
   render() {
-    if (this.state.redirect) {
-      return (
-        <Redirect
-          to={{ pathname: this.state.redirect, state: this.state.resData }}
-        />
-      );
-    }
     return (
-      <>
-        <div className="root-container">
-          <div className="box-controller">
-            <div
-              className={
-                "controller " +
-                (this.state.isLoginOpen ? "selected-controller" : "")
-              }
-              onClick={this.showLoginBox.bind(this)}
-            >
-              Login
-            </div>
-            <div
-              className={
-                "controller " +
-                (this.state.isRegisterOpen ? "selected-controller" : "")
-              }
-              onClick={this.showRegisterBox.bind(this)}
-            >
-              Register
-            </div>
-          </div>
-
-          <div className="box-container">
-            {this.state.isLoginOpen && <LoginBox />}
-            {this.state.isRegisterOpen && <RegisterBox />}
-          </div>
-        </div>
-        {this.state.renderLoginMessage ? (
-          <>
-            <ErrorComponent errorProps={this.state.errorProps} />
-          </>
-        ) : null}
-      </>
+      <BrowserRouter>
+        <Switch>
+          <Route
+            exact
+            path="/"
+            render={() => {
+              return (
+                <>
+                  <Header data={this.state.userData} />
+                  <About data={this.state.userData} />
+                </>
+              );
+            }}
+          />
+          <Route
+            exact
+            path="/login"
+            render={() => {
+              return (
+                <>
+                  <Particles type="polygon" bg={true} />
+                  <MyForm />
+                </>
+              );
+            }}
+          />
+          <Route
+            exact
+            path="/mainpage"
+            render={(props) => {
+              return (
+                <Provider store={store}>
+                  <Mainpage {...props} />
+                </Provider>
+              );
+            }}
+          />
+        </Switch>
+      </BrowserRouter>
     );
   }
 }
-
-const rootElement = document.getElementById("root");
-
-ReactDOM.render(
-  <BrowserRouter>
-    <Switch>
-      <Route
-        exact
-        path="/"
-        render={() => {
-          return (
-            <>
-              <Particles type="polygon" bg={true} />
-              <MyForm />
-            </>
-          );
-        }}
-      />
-      <Route exact path="/register" render={() => <Register />} />
-      <Route
-        exact
-        path="/mainpage"
-        render={(props) => {
-          return (
-            <Provider store={store}>
-              <Mainpage {...props} />
-            </Provider>
-          );
-        }}
-      />
-    </Switch>
-  </BrowserRouter>,
-  rootElement
-);
+ReactDOM.render(<MainApp />, rootElement);

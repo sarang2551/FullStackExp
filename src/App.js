@@ -1,103 +1,113 @@
-import "./styles.css";
 import React from "react";
+import "./login.scss";
 import Axios from "axios";
+import { Redirect } from "react-router-dom";
 import ErrorComponent from "./components/error";
-export default class Register extends React.Component {
+
+import LoginBox from "./components/Login";
+import RegisterBox from "./components/Register";
+export default class MyForm extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       username: "",
       password: "",
-      email: "",
+      renderLoginMessage: false,
       errorProps: {},
-      isShowErrorComponent: false
+      redirect: null,
+      resData: {},
+      isLoginOpen: true,
+      isRegisterOpen: false
     };
   }
-  handleChange = (e) => {
-    const { name, value } = e.target;
-    try {
-      this.setState({ ...this.state, [name]: value });
-    } catch (e) {
-      throw e;
-    }
-  };
-  mySubmitHandler = (event) => {
+
+  showLoginBox() {
+    this.setState({ isLoginOpen: true, isRegisterOpen: false });
+  }
+
+  showRegisterBox() {
+    this.setState({ isRegisterOpen: true, isLoginOpen: false });
+  }
+  mySubmitHandler = async (event) => {
     event.preventDefault();
-    const userInfo = {
-      username: this.state.username,
-      password: this.state.password,
-      email: this.state.email
-    };
-    Axios.post("http://localhost:3000/register", userInfo).then((res) => {
-      console.log("res.data", res.data);
-      const { username, success } = res.data;
-      let errorProps = null;
-
-      if (success === "registered") {
-        errorProps = {
-          type: "success",
-          content: `${username} is successfully registered!`
-        };
-      }
-
-      if (success === "failed") {
-        errorProps = {
-          type: "error",
-          content: `Failed to registered ${username}`
-        };
-      }
-
-      if (success === "duplicate") {
-        errorProps = {
-          type: "warn",
-          content: `${username} already exists`
-        };
-      }
-
-      this.setState({ errorProps: errorProps, isShowErrorComponent: true });
-    });
+    try {
+      const userInfo = {
+        username: this.state.username,
+        password: this.state.password
+      };
+      console.log("userInfo", userInfo);
+      Axios.post("http://localhost:3000/login", userInfo).then((res) => {
+        let loginProps = null;
+        const { username, loginStatus } = res.data;
+        switch (loginStatus) {
+          case "success":
+            this.setState({ redirect: "/mainpage", resData: res.data });
+            console.log("res.data ", res.data);
+            return;
+          case "failed":
+            loginProps = {
+              type: "failed",
+              content: `${username} login failed. Incorrect password!`
+            };
+            this.setState({
+              errorProps: loginProps,
+              renderLoginMessage: true
+            });
+            return;
+          case "notFound":
+            loginProps = { type: "warn", content: `User could not be found!` };
+            this.setState({
+              errorProps: loginProps,
+              renderLoginMessage: true
+            });
+            return;
+          default:
+            return <div></div>;
+        }
+      });
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   render() {
+    if (this.state.redirect) {
+      return (
+        <Redirect
+          to={{ pathname: this.state.redirect, state: this.state.resData }}
+        />
+      );
+    }
     return (
       <>
-        <form method="POST" className="App" onSubmit={this.mySubmitHandler}>
-          <div>
-            <label>Email</label>
-            <br />
-            <input
-              required
-              name="email"
-              type="email"
-              onChange={this.handleChange}
-            ></input>
-            <br />
-            <label>Username</label>
-            <br />
-            <input
-              required
-              name="username"
-              onChange={this.handleChange}
-            ></input>
-            <br />
-            <label>Password</label>
-            <br />
-            <input
-              required
-              name="password"
-              type="password"
-              onChange={this.handleChange}
-            ></input>
-            <br />
-            <button type="submit">REGISTER</button>
-            <br />
-            <a className="button" href="https://5cs4z.csb.app/">
-              LOGIN
-            </a>
+        <div className="root-container">
+          <div className="box-controller">
+            <div
+              className={
+                "controller " +
+                (this.state.isLoginOpen ? "selected-controller" : "")
+              }
+              onClick={this.showLoginBox.bind(this)}
+            >
+              Login
+            </div>
+            <div
+              className={
+                "controller " +
+                (this.state.isRegisterOpen ? "selected-controller" : "")
+              }
+              onClick={this.showRegisterBox.bind(this)}
+            >
+              Register
+            </div>
           </div>
-        </form>
 
-        {this.state.isShowErrorComponent ? (
+          <div className="box-container">
+            {this.state.isLoginOpen && <LoginBox />}
+            {this.state.isRegisterOpen && <RegisterBox />}
+          </div>
+        </div>
+        {this.state.renderLoginMessage ? (
           <>
             <ErrorComponent errorProps={this.state.errorProps} />
           </>
